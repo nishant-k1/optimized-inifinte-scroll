@@ -24,6 +24,7 @@ const useCards = ({ currentPage }) => {
             })
           );
           setCardList([...(pageData?.cardList || []), ...res.data]);
+          // setCardList(pageData?.cardList || []); // localStorage gets updated but pageData won't get assigned this new updated value unless the component re-renders
         }
       } catch (error) {
         console.log(error);
