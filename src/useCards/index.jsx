@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { useEffect, useState } from 'react';
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const useCards = ({ currentPage }) => {
   const [cardList, setCardList] = useState(
@@ -12,7 +12,7 @@ const useCards = ({ currentPage }) => {
     const fetchCardList = async () => {
       try {
         const res = await axios({
-          method: 'get',
+          method: "get",
           url: `https://jsonplaceholder.typicode.com/posts?_page=${currentPage}&_limit=20`,
         });
         if (res.status === 200) {
@@ -33,12 +33,14 @@ const useCards = ({ currentPage }) => {
       if (currentPage <= pageData?.currentPage) {
         setCardList(pageData?.cardList);
       } else if (currentPage > pageData?.currentPage) {
-        if (currentPage < 100) {
+        if (currentPage < 4) {
           fetchCardList();
         }
       }
     } else {
-      fetchCardList();
+      if (currentPage < 4) {
+        fetchCardList();
+      }
     }
   }, [currentPage]);
 
