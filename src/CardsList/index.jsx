@@ -9,7 +9,9 @@ const CardsList = () => {
   const observer = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchCards(currentPage));
+    if (!cardList[0]) {
+      dispatch(fetchCards(currentPage));
+    }
   }, []);
 
   const lastCardRef = useCallback(
