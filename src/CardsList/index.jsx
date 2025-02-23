@@ -1,33 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import useCards from "../useCards";
 
 const CardsList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const cardList = useCards({ currentPage });
   const containerRef = useRef(null);
-  const lastCardRef = useRef(null);
+  const observer = useRef(null); // Store observer instance
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const lastCard = entries[0];
-        if (lastCard.isIntersecting) {
-          setCurrentPage((prevPage) => prevPage + 1);
-        }
-      },
-      { threshold: 1, root: containerRef.current }
-    );
+  const lastCardRef = useCallback((node) => {
+    if (observer.current) observer.current.disconnect(); // Cleanup previous observer
 
-    if (lastCardRef.current) {
-      observer.observe(lastCardRef.current);
-    }
-
-    return () => {
-      if (lastCardRef.current) {
-        observer.unobserve(lastCardRef.current);
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        console.log("Last card visible, loading more...");
+        setCurrentPage((prevPage) => prevPage + 1);
       }
-    };
-  }, [cardList]);
+    });
+
+    if (node) observer.current.observe(node); // Observe the new last card
+  }, []);
 
   return (
     <div
@@ -35,22 +26,20 @@ const CardsList = () => {
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
-        width: "60vw",
-        margin: "20vh auto",
         gap: "24px",
         background: "grey",
-        textAlign: "center",
         padding: "2rem",
         overflowY: "scroll",
         height: "50vh",
+        width: "100vw",
       }}
     >
       {Array.isArray(cardList) &&
-        cardList?.map((item, index) => {
+        cardList.map((item, index) => {
           return (
             <div
-              ref={index === cardList.length - 1 ? lastCardRef : null}
               key={item.id}
+              ref={index === cardList.length - 1 ? lastCardRef : null} // ✅ Dynamic tracking
               style={{
                 background: "black",
                 height: "12rem",
