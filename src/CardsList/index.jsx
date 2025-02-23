@@ -1,24 +1,31 @@
-import { useState, useCallback, useRef } from "react";
-import useCards from "../useCards";
+import { useCallback, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchCards } from "../features/cardsSlice";
 
 const CardsList = () => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const cardList = useCards({ currentPage });
+  const dispatch = useDispatch();
+  const { cardList, currentPage } = useSelector((state) => state.cards);
   const containerRef = useRef(null);
-  const observer = useRef(null); // Store observer instance
+  const observer = useRef(null);
 
-  const lastCardRef = useCallback((node) => {
-    if (observer.current) observer.current.disconnect(); // Cleanup previous observer
-
-    observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        console.log("Last card visible, loading more...");
-        setCurrentPage((prevPage) => prevPage + 1);
-      }
-    });
-
-    if (node) observer.current.observe(node); // Observe the new last card
+  useEffect(() => {
+    dispatch(fetchCards(currentPage));
   }, []);
+
+  const lastCardRef = useCallback(
+    (node) => {
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          if (currentPage < 5) {
+            dispatch(fetchCards(currentPage + 1));
+          }
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [currentPage, dispatch]
+  );
 
   return (
     <div
